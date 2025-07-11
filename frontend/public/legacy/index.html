@@ -1,0 +1,116 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OFP Calculator</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <img src="assets/logo.png" alt="OAR Students Logo" id="logo" />
+    <h1>Operational Flight Plan Calculator - @oarstudents</h1>
+  </header>
+
+  <main>
+    <section class="settings section">
+      <h2>Flight Settings</h2>
+      <div class="input-group">
+        <label for="alternateDistance">Alternate Distance (NM):</label>
+        <input id="alternateDistance" type="number" value="50" min="0" step="0.1" />
+      </div>
+      <div class="input-group">
+        <label for="fuelPerHour">Fuel Consumption (USG/hr):</label>
+        <input id="fuelPerHour" type="number" value="6" min="1" step="0.1" required />
+      </div>
+      <div class="input-group">
+        <label for="additionalFuel">Additional Fuel (USG, Commander's Discretion):</label>
+        <input id="additionalFuel" type="number" value="0" min="0" step="0.1" />
+      </div>
+      <div class="input-group">
+        <label for="extraFuel">Extra Fuel (USG):</label>
+        <input id="extraFuel" type="number" value="0" min="0" step="0.1" />
+      </div>
+      <div class="input-group">
+        <label for="taxiFuel">Taxi Fuel (USG):</label>
+        <input id="taxiFuel" type="number" value="0.1" min="0" step="0.1" />
+      </div>
+    </section>
+
+    <section class="legs section">
+      <h2>Leg Inputs</h2>
+      <div class="table-container">
+        <table id="legsTable">
+          <thead>
+            <tr>
+              <th>STARTING POINT</th>
+              <th>ENDING POINT</th>
+              <th>ALT (ft)</th>
+              <th>WIND ANG (°)</th>
+              <th>WIND SPD (kt)</th>
+              <th>TEMP (°C)</th>
+              <th>IAS (kt)</th>
+              <th>TC (°)</th>
+              <th>VAR (°)</th>
+              <th>DIST (NM)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><input type="text" /></td>
+              <td><input type="text" /></td>
+              <td><input type="number" min="0" step="1" /></td>
+              <td><input type="number" min="0" max="360" step="1" /></td>
+              <td><input type="number" min="0" step="1" /></td>
+              <td><input type="number" min="-60" max="50" step="1" /></td>
+              <td><input type="number" min="1" step="1" required /></td>
+              <td><input type="number" min="0" max="360" step="1" /></td>
+              <td><input type="number" min="-30" max="30" step="1" /></td>
+              <td><input type="number" min="0.1" step="0.1" required /></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="buttons">
+        <button id="addLegBtn">Add Leg</button>
+        <button id="calculateBtn">Calculate</button>
+      </div>
+    </section>
+
+    <section class="results section">
+      <h2>Results</h2>
+      <div class="table-container">
+        <table id="resultsTable">
+          <thead>
+            <tr>
+              <th>Starting Point</th>
+              <th>Ending Point</th>
+              <th>Temp Dev (°C)</th>
+              <th>TAS (kt)</th>
+              <th>MC (°)</th>
+              <th>WCA (°)</th>
+              <th>MH (°)</th>
+              <th>GS (kt)</th>
+              <th>ETE (min)</th>
+              <th>Fuel (USG)</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="summary section">
+      <h2>Fuel Summary (EASA)</h2>
+      <div id="fuelSummary"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; OAR Students - INSTAGRAM @oarstudents</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
