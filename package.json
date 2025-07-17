@@ -1,0 +1,12 @@
+{
+  "name": "oarstudents",
+  "private": true,
+  "scripts": {
+    "dev":     "concurrently \"npm:backend\" \"npm:frontend\"",
+    "backend": "cd backend && source venv/bin/activate && python manage.py runserver",
+    "frontend":"cd frontend && npm start"
+  },
+  "devDependencies": {
+    "concurrently": "^7.6.0"
+  }
+}
