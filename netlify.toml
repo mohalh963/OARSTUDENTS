@@ -1,9 +1,4 @@
 [build]
   base    = "frontend"
   command = "npm run build"
-  publish = "frontend/build"
-
-[[redirects]]
-  from   = "/"
-  to     = "/legacy/index.html"
-  status = 200
+  publish = "build"
