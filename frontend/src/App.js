@@ -22,6 +22,7 @@ function App() {
 
       <main className="page-content">
         <h2 className="page-title">Auto OFP – Interactive Map</h2>
+        <h3> STILL IN DEVELOPMENT, YOU CAN USE MANUAL OFP </h3>
         <MapPanel />
       </main>
     </div>
