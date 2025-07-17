@@ -1,14 +1,27 @@
 import React from 'react';
 import './App.css';
+import logo from './assets/logo.png';        // your school logo
 import MapPanel from './components/MapPanel';
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <h1>OFP Calculator – Map</h1>
+      <header className="site-header">
+        <img src={logo} alt="OAR STUDENTS" className="site-logo" />
+        <h1 className="site-title">OAR STUDENTS</h1>
+        <nav className="site-nav">
+          <ul>
+            <li><a href="/">Auto OFP</a></li>
+            <li><a href="/legacy/index.html" target="_blank" rel="noopener noreferrer">
+              Manual OFP
+            </a></li>
+            {/* add more links here as you build other sections */}
+          </ul>
+        </nav>
       </header>
-      <main style={{ padding: '20px' }}>
+
+      <main className="page-content">
+        <h2 className="page-title">Auto OFP – Interactive Map</h2>
         <MapPanel />
       </main>
     </div>
@@ -16,4 +29,3 @@ function App() {
 }
 
 export default App;
-

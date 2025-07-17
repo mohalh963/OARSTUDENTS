@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { MapContainer, TileLayer, LayersControl, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { SCHOOL_AIRPORTS } from '../data/airports';
+import L from 'leaflet';
+import airportIconPng from '../assets/airport-icon.png';
 
 export default function MapPanel() {
   const [mode, setMode] = useState('VFR'); // or 'IFR'
@@ -12,12 +14,19 @@ export default function MapPanel() {
     {
       name: 'VFR (OSM)',
       url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      attribution: '&copy; OpenStreetMap contributors'
     },
     {
-      name: 'IFR (Aeronautical)',
-      url: 'https://tiles.openaip.net/geo/tiles/{z}/{x}/{y}.png', // example aeronautical tiles
+      name: 'IFR (Light Terrain)',
+      url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+      attribution: '&copy; CartoDB'
     }
   ];
+  const airportIcon = new L.Icon({
+    iconUrl: airportIconPng,
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+  });
 
   return (
     <div>
@@ -63,11 +72,9 @@ export default function MapPanel() {
         </LayersControl>
 
         {SCHOOL_AIRPORTS.map(({ icao, name, coords }) => (
-          <Marker key={icao} position={coords}>
-            <Popup>
-              <strong>{icao}</strong><br />{name}
-            </Popup>
-          </Marker>
+          <Marker key={icao} position={coords} icon={airportIcon}>
+          <Popup>{icao}: {name}</Popup>
+        </Marker>
         ))}
       </MapContainer>
     </div>
