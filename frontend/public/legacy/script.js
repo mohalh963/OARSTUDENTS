@@ -110,7 +110,7 @@ function calculate() {
 
   // Fuel summary
   const contingency1    = totalTripFuel * 0.2;
-  const contingency2    = (20 / 60) * fuelPerHour;
+  const contingency2    = (5 / 60) * fuelPerHour;
   const contingency     = Math.max(contingency1, contingency2);
   const alternateFuel   = (altDist / 90) * fuelPerHour;
   const finalReserve    = 0.75 * fuelPerHour;
@@ -121,7 +121,7 @@ function calculate() {
 
   document.getElementById('fuelSummary').innerHTML = `
     <p><strong>Trip Fuel:</strong> ${totalTripFuel.toFixed(2)} USG</p>
-    <p><strong>Contingency (20% or 20 min):</strong> ${contingency.toFixed(2)} USG</p>
+    <p><strong>Contingency (20% or 5):</strong> ${contingency.toFixed(2)} USG</p>
     <p><strong>Alternate Fuel:</strong> ${alternateFuel.toFixed(2)} USG</p>
     <p><strong>Final Reserve (45 min):</strong> ${finalReserve.toFixed(2)} USG</p>
     <p><strong>Additional Fuel:</strong> ${additional.toFixed(2)} USG</p>
