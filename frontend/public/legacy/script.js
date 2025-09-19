@@ -1,7 +1,7 @@
 // Aircraft data (converted from liters to USG: 1 liter = 0.264172 USG)
 const aircraftData = {
-  'DA20': {
-      name: 'Diamond DA20',
+  'DV20': {
+      name: 'Diamond DV20',
       climb: 6.0,
       cruise: 6.0,
       descent: 6.0
