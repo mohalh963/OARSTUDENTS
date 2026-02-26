@@ -1,4 +1,4 @@
-// Aircraft data (NO unit conversion — each aircraft uses its real unit)
+// Aircraft data (each aircraft uses its REAL unit — no conversions)
 const aircraftData = {
     'DV20': {
         name: 'Diamond DV20',
@@ -10,9 +10,9 @@ const aircraftData = {
     'P208': {
         name: 'Tecnam P208',
         unit: 'L',
-        climb: 25,
-        cruise: 15,
-        descent: 12
+        climb: 25,   // L/h
+        cruise: 15,  // L/h
+        descent: 12  // L/h
     }
   };
   
@@ -25,9 +25,9 @@ const aircraftData = {
             const aircraft = aircraftData[this.value];
             aircraftInfo.innerHTML = `
                 <p><strong>${aircraft.name} Fuel Consumption:</strong></p>
-                <p>Climb: ${aircraft.climb} ${aircraft.unit}/hour</p>
-                <p>Cruise: ${aircraft.cruise} ${aircraft.unit}/hour</p>
-                <p>Descent: ${aircraft.descent} ${aircraft.unit}/hour</p>
+                <p>Climb: ${roundUpToNearestTenth(aircraft.climb).toFixed(1)} ${aircraft.unit}/hour</p>
+                <p>Cruise: ${roundUpToNearestTenth(aircraft.cruise).toFixed(1)} ${aircraft.unit}/hour</p>
+                <p>Descent: ${roundUpToNearestTenth(aircraft.descent).toFixed(1)} ${aircraft.unit}/hour</p>
             `;
         } else {
             aircraftInfo.innerHTML = '';
@@ -76,13 +76,22 @@ const aircraftData = {
     }
   }
   
-  function roundUp(value) {
+  function roundUpToNearestTenth(value) {
     return Math.ceil(value * 10) / 10;
+  }
+  
+  function getFuelConsumption(aircraft, phase) {
+    if (!aircraftData[aircraft]) return 0;
+    return aircraftData[aircraft][phase];
   }
   
   function calculate() {
   
     const aircraftKey = document.getElementById('aircraftType').value;
+    const rows = document.querySelectorAll('#legsTable tbody tr');
+    const resultsBody = document.querySelector('#resultsTable tbody');
+    resultsBody.innerHTML = '';
+  
     if (!aircraftKey) {
         alert('Please select an aircraft type.');
         return;
@@ -91,11 +100,8 @@ const aircraftData = {
     const aircraft = aircraftData[aircraftKey];
     const fuelUnit = aircraft.unit;
   
+    // Update fuel column header dynamically
     document.getElementById('fuelHeader').textContent = `Fuel (${fuelUnit})`;
-  
-    const rows = document.querySelectorAll('#legsTable tbody tr');
-    const resultsBody = document.querySelector('#resultsTable tbody');
-    resultsBody.innerHTML = '';
   
     let totalTripFuel = 0;
     const warnings = [];
@@ -108,7 +114,6 @@ const aircraftData = {
     rows.forEach((row, i) => {
   
         const cells = row.querySelectorAll('input, select');
-  
         const startingPoint = cells[0].value.trim() || 'N/A';
         const endingPoint   = cells[1].value.trim() || 'N/A';
         const alt           = parseFloat(cells[2].value) || 0;
@@ -121,24 +126,26 @@ const aircraftData = {
         const dist          = parseFloat(cells[9].value);
         const phase         = cells[10].value;
   
-        const fuelPerHour = aircraft[phase];
+        const fuelPerHour = getFuelConsumption(aircraftKey, phase);
   
         const rowWarnings = [];
   
         if (!cells[6].value || ias <= 0) rowWarnings.push('IAS must be > 0');
         if (!cells[9].value || dist <= 0) rowWarnings.push('Distance must be > 0');
-        if (isNaN(windDir) || windDir < 0 || windDir > 360) rowWarnings.push('Wind angle 0–360');
+        if (isNaN(windDir) || windDir < 0 || windDir > 360) rowWarnings.push('Wind angle 0°–360°');
         if (isNaN(windSpd) || windSpd < 0) rowWarnings.push('Wind speed ≥ 0');
-        if (isNaN(tc) || tc < 0 || tc > 360) rowWarnings.push('TC 0–360');
+        if (!isNaN(temp) && (temp < -60 || temp > 50)) rowWarnings.push('Temp −60° to +50°C');
+        if (isNaN(tc) || tc < 0 || tc > 360) rowWarnings.push('True course 0°–360°');
+        if (Math.abs(variation) > 30) rowWarnings.push('Variation >30°?');
   
         if (rowWarnings.length) {
-            warnings.push(`Leg ${i+1}: ${rowWarnings.join('; ')}`);
+            warnings.push(`Leg ${i+1} (${startingPoint}→${endingPoint}): ${rowWarnings.join('; ')}`);
             return;
         }
   
-        const tas = ias + (alt / 1000 * (ias * 0.02));
-        const mc  = tc + variation;
-  
+        const tempDev   = temp - (15 - ((alt / 1000) * 2));
+        const tas       = ias + (alt / 1000 * (ias * 0.02));
+        const mc        = tc + variation;
         const windAngle = ((windDir - mc + 360) % 360);
   
         let wca = 0;
@@ -148,43 +155,46 @@ const aircraftData = {
   
         const gs = tas - (windSpd * Math.cos(windAngle * Math.PI / 180));
         if (gs <= 0 || isNaN(gs)) {
-            warnings.push(`Leg ${i+1}: Invalid GS`);
+            warnings.push(`Leg ${i+1} (${startingPoint}→${endingPoint}): invalid GS`);
             return;
         }
   
         const ete  = dist / gs * 60;
-        const fuel = (ete / 60) * fuelPerHour;
+        const fuel = ete / 60 * fuelPerHour;
   
         totalTripFuel += fuel;
   
         const resultRow = document.createElement('tr');
+        const mh        = mc + wca;
   
-        [
+        const values = [
             startingPoint,
             endingPoint,
             phase.charAt(0).toUpperCase() + phase.slice(1),
-            (tas).toFixed(1),
-            (mc).toFixed(1),
-            (wca).toFixed(1),
-            (mc + wca).toFixed(1),
-            (gs).toFixed(1),
-            (ete).toFixed(1),
-            roundUp(fuel).toFixed(1)
-        ].forEach(val => {
-            const td = document.createElement('td');
-            td.textContent = val;
-            resultRow.appendChild(td);
+            tempDev.toFixed(1),
+            tas.toFixed(1),
+            mc.toFixed(1),
+            wca.toFixed(1),
+            mh.toFixed(1),
+            gs.toFixed(1),
+            ete.toFixed(1),
+            roundUpToNearestTenth(fuel).toFixed(1)
+        ];
+  
+        values.forEach(val => {
+            const cell = document.createElement('td');
+            cell.textContent = val;
+            resultRow.appendChild(cell);
         });
   
         resultsBody.appendChild(resultRow);
     });
   
     if (warnings.length) {
-        alert(warnings.join('\n'));
-        return;
+        alert('Please fix:\n\n' + warnings.join('\n'));
     }
   
-    if (totalTripFuel <= 0) return;
+    if (totalTripFuel <= 0 || isNaN(totalTripFuel)) return;
   
     const avgFuelPerHour = aircraft.cruise;
   
@@ -201,16 +211,16 @@ const aircraftData = {
     const expectedLanding = totalTOFuel - totalTripFuel;
   
     document.getElementById('fuelSummary').innerHTML = `
-        <p><strong>Trip Fuel:</strong> ${roundUp(totalTripFuel).toFixed(1)} ${fuelUnit}</p>
-        <p><strong>Contingency:</strong> ${roundUp(contingency).toFixed(1)} ${fuelUnit}</p>
-        <p><strong>Alternate Fuel:</strong> ${roundUp(alternateFuel).toFixed(1)} ${fuelUnit}</p>
-        <p><strong>Final Reserve (45min):</strong> ${roundUp(finalReserve).toFixed(1)} ${fuelUnit}</p>
-        <p><strong>Additional Fuel:</strong> ${roundUp(additional).toFixed(1)} ${fuelUnit}</p>
-        <p><strong>Total Reserve:</strong> ${roundUp(totalReserve).toFixed(1)} ${fuelUnit}</p>
-        <p><strong>Total T/O Fuel:</strong> ${roundUp(totalTOFuel).toFixed(1)} ${fuelUnit}</p>
-        <p><strong>Extra Fuel:</strong> ${roundUp(extra).toFixed(1)} ${fuelUnit}</p>
-        <p><strong>Taxi Fuel:</strong> ${roundUp(taxi).toFixed(1)} ${fuelUnit}</p>
-        <p><strong>Ramp Fuel:</strong> ${roundUp(rampFuel).toFixed(1)} ${fuelUnit}</p>
-        <p><strong>Expected Landing Fuel:</strong> ${roundUp(expectedLanding).toFixed(1)} ${fuelUnit}</p>
+        <p><strong>Trip Fuel:</strong> ${roundUpToNearestTenth(totalTripFuel).toFixed(1)} ${fuelUnit}</p>
+        <p><strong>Contingency (20% or 5min):</strong> ${roundUpToNearestTenth(contingency).toFixed(1)} ${fuelUnit}</p>
+        <p><strong>Alternate Fuel:</strong> ${roundUpToNearestTenth(alternateFuel).toFixed(1)} ${fuelUnit}</p>
+        <p><strong>Final Reserve (45min):</strong> ${roundUpToNearestTenth(finalReserve).toFixed(1)} ${fuelUnit}</p>
+        <p><strong>Additional Fuel:</strong> ${roundUpToNearestTenth(additional).toFixed(1)} ${fuelUnit}</p>
+        <p><strong>Total Reserve:</strong> ${roundUpToNearestTenth(totalReserve).toFixed(1)} ${fuelUnit}</p>
+        <p><strong>Total T/O Fuel:</strong> ${roundUpToNearestTenth(totalTOFuel).toFixed(1)} ${fuelUnit}</p>
+        <p><strong>Extra Fuel:</strong> ${roundUpToNearestTenth(extra).toFixed(1)} ${fuelUnit}</p>
+        <p><strong>Taxi Fuel:</strong> ${roundUpToNearestTenth(taxi).toFixed(1)} ${fuelUnit}</p>
+        <p><strong>Ramp Fuel:</strong> ${roundUpToNearestTenth(rampFuel).toFixed(1)} ${fuelUnit}</p>
+        <p><strong>Expected Landing Fuel:</strong> ${roundUpToNearestTenth(expectedLanding).toFixed(1)} ${fuelUnit}</p>
     `;
   }
